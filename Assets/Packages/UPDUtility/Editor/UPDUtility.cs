@@ -24,7 +24,6 @@ namespace KYapp.UPD
         {
             if (Setting == null)
             {
-                Debug.Log("A");
                 var guids = AssetDatabase.FindAssets("UPDSetting");
                 if (guids.Length == 0)
                 {
