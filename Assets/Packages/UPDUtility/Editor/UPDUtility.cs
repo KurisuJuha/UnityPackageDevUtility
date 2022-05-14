@@ -51,6 +51,7 @@ namespace KYapp.UPD
                     Setting.FolderName = EditorGUILayout.TextField("FolderName", Setting.FolderName);
                     Setting.IsAssets = EditorGUILayout.Toggle("IsAssets", Setting.IsAssets);
 
+                    Setting.Author = EditorGUILayout.TextField("Author", Setting.Author);
                     Setting.PackageName = EditorGUILayout.TextField("PackageName", Setting.PackageName);
                     Setting.PackageDisplayName = EditorGUILayout.TextField("PackageDisplayName", Setting.PackageDisplayName);
                     Setting.PackageDescription = EditorGUILayout.TextField("PackageDescription", Setting.PackageDescription);
@@ -95,7 +96,7 @@ namespace KYapp.UPD
 
         static void SaveJson(UPDSetting Setting)
         {
-            CreateTextFile(Setting.ProjectDirectory + "package.json", "{" + $"\"name\": \"{EditorPrefs.GetString("UPDScope") + "." + Setting.PackageName}\",\"version\": \"{Setting.Version}\",\"displayName\": \"{Setting.PackageDisplayName}\",\"description\": \"{Setting.PackageDescription}\",\"repository\": \"github:{EditorPrefs.GetString("UPDRepository") + "/" + Setting.PackageRepository}\"" + "}");
+            CreateTextFile(Setting.ProjectDirectory + "package.json", "{" + $"\"author\": \"{Setting.Author}\",\"name\": \"{EditorPrefs.GetString("UPDScope") + "." + Setting.PackageName}\",\"version\": \"{Setting.Version}\",\"displayName\": \"{Setting.PackageDisplayName}\",\"description\": \"{Setting.PackageDescription}\",\"repository\": \"github:{EditorPrefs.GetString("UPDRepository") + "/" + Setting.PackageRepository}\"" + "}");
         }
 
         static void FolderPath(string folderPath)
@@ -127,6 +128,7 @@ namespace KYapp.UPD
         public string ProjectDirectory;
         public Version Version;
 
+        public string Author;
         public string PackageName;
         public string PackageDisplayName;
         public string PackageDescription;
