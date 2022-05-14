@@ -33,6 +33,7 @@ namespace KYapp.UPD
                 var path = AssetDatabase.GUIDToAssetPath(guids[0]);
                 var obj = AssetDatabase.LoadAssetAtPath<UPDSetting>(path);
                 Setting = obj;
+                return;
             }
             if (!EditorPrefs.GetBool("UPDSetup"))
             {
@@ -49,7 +50,6 @@ namespace KYapp.UPD
                 if (!Setting.Setup)
                 {
                     Setting.FolderName = EditorGUILayout.TextField("FolderName", Setting.FolderName);
-                    Setting.IsAssets = EditorGUILayout.Toggle("IsAssets", Setting.IsAssets);
 
                     Setting.Author = EditorGUILayout.TextField("Author", Setting.Author);
                     Setting.PackageName = EditorGUILayout.TextField("PackageName", Setting.PackageName);
@@ -67,17 +67,8 @@ namespace KYapp.UPD
                         };
                         //アセットかどうか
                         Setting.Setup = true;
-                        if (!Setting.IsAssets)
-                        {
-                            FolderPath("Packages");
-                            FolderPath("Packages/" + Setting.FolderName);
-                            Setting.ProjectDirectory = "Packages/" + Setting.FolderName + "/";
-                        }
-                        else
-                        {
-                            FolderPath(Setting.FolderName);
-                            Setting.ProjectDirectory = Setting.FolderName + "/";
-                        }
+                        FolderPath(Setting.FolderName);
+                        Setting.ProjectDirectory = Setting.FolderName + "/";
                         SaveJson(Setting);
                     }
                 }
@@ -123,7 +114,6 @@ namespace KYapp.UPD
     public class UPDSetting : ScriptableObject
     {
         public bool Setup;
-        public bool IsAssets;
         public string FolderName;
         public string ProjectDirectory;
         public Version Version;
