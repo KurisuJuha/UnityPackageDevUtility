@@ -2,7 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Diagnostics;
 using System.IO;
+using System;
+using System.Text;
+using Debug = UnityEngine.Debug;
 
 namespace KYapp.UPD
 {
@@ -20,6 +24,7 @@ namespace KYapp.UPD
         {
             if (Setting == null)
             {
+                Debug.Log("A");
                 var guids = AssetDatabase.FindAssets("UPDSetting");
                 if (guids.Length == 0)
                 {
@@ -54,6 +59,12 @@ namespace KYapp.UPD
 
                     if (GUILayout.Button("Setup"))
                     {
+                        Setting.Version = new Version()
+                        {
+                            a = 1,
+                            b = 0,
+                            c = 0,
+                        };
                         //アセットかどうか
                         Setting.Setup = true;
                         if (!Setting.IsAssets)
@@ -67,11 +78,25 @@ namespace KYapp.UPD
                             FolderPath(Setting.FolderName);
                             Setting.ProjectDirectory = Setting.FolderName + "/";
                         }
-                        Debug.Log(Setting.ProjectDirectory);
-                        CreateTextFile(Setting.ProjectDirectory + "package.json", "{" + $"\"name\": \"{EditorPrefs.GetString("UPDScope") + "." + Setting.PackageName}\",\"version\": \"1.0.0\",\"displayName\": \"{Setting.PackageDisplayName}\",\"description\": \"{Setting.PackageDescription}\",\"repository\": \"github:{EditorPrefs.GetString("UPDRepository") + "/" + Setting.PackageRepository}\"" + "}");
+                        SaveJson(Setting);
+                    }
+                }
+                else
+                {
+                    if (GUILayout.Button("Publish"))
+                    {
+                        SaveJson(Setting);
+                        string command = $"/c cd Assets & cd {Setting.ProjectDirectory.Replace("/","\\")} & npm publish";
+                        Process.Start("cmd.exe", command);
+                        Setting.Version.c = Setting.Version.c + 1;
                     }
                 }
             }
+        }
+
+        static void SaveJson(UPDSetting Setting)
+        {
+            CreateTextFile(Setting.ProjectDirectory + "package.json", "{" + $"\"name\": \"{EditorPrefs.GetString("UPDScope") + "." + Setting.PackageName}\",\"version\": \"{Setting.Version}\",\"displayName\": \"{Setting.PackageDisplayName}\",\"description\": \"{Setting.PackageDescription}\",\"repository\": \"github:{EditorPrefs.GetString("UPDRepository") + "/" + Setting.PackageRepository}\"" + "}");
         }
 
         static void FolderPath(string folderPath)
@@ -88,7 +113,6 @@ namespace KYapp.UPD
         static void CreateTextFile(string name, string content)
         {
             string path = "Assets/" + name;
-            Debug.Log(path);
             StreamWriter sw = File.CreateText(path);
             sw.Write(content);
             sw.Close();
@@ -102,10 +126,24 @@ namespace KYapp.UPD
         public bool IsAssets;
         public string FolderName;
         public string ProjectDirectory;
+        public Version Version;
 
         public string PackageName;
         public string PackageDisplayName;
         public string PackageDescription;
         public string PackageRepository;
+    }
+
+    [Serializable]
+    public class Version
+    {
+        public int a;
+        public int b;
+        public int c;
+
+        public override string ToString()
+        {
+            return a + "." + b + "." + c;
+        }
     }
 }

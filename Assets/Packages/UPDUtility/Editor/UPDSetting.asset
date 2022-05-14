@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp-Editor:KYapp.UPD:UPDSetting
   Setup: 1
   IsAssets: 0
-  FolderName: testpackage
-  ProjectDirectory: Packages/testpackage/
-  PackageName: TestPackage
-  PackageDisplayName: "\u30C6\u30B9\u30C8\u306E\u30D1\u30C3\u30B1\u30FC\u30B8\u3067\u3059"
+  FolderName: TestPackage
+  ProjectDirectory: Packages/TestPackage/
+  PackageName: testpackage
+  PackageDisplayName: TestPackage
   PackageDescription: "\u30C6\u30B9\u30C8\u306E\u30D1\u30C3\u30B1\u30FC\u30B8\u3067\u3059"
   PackageRepository: testpackage
