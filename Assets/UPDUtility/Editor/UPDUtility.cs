@@ -85,6 +85,9 @@ namespace KYapp.UPD
                             string command = $"/c cd Assets & cd {Setting.ProjectDirectory.Replace("/", "\\")} & npm publish";
                             Process.Start("cmd.exe", command);
                             Setting.Version.c = Setting.Version.c + 1;
+
+                            EditorUtility.SetDirty(Setting);
+                            AssetDatabase.SaveAssets();
                         }
                     }
                 }
