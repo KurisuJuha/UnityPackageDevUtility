@@ -35,51 +35,57 @@ namespace KYapp.UPD
                 Setting = obj;
                 return;
             }
-            if (!EditorPrefs.GetBool("UPDSetup"))
-            {
-                EditorPrefs.SetString("UPDScope", EditorGUILayout.TextField("Scope", EditorPrefs.GetString("UPDScope")));
-                EditorPrefs.SetString("UPDRepository", EditorGUILayout.TextField("GithubUserName", EditorPrefs.GetString("UPDRepository")));
-                if (GUILayout.Button("UPDSetup"))
-                {
-                    EditorPrefs.SetBool("UPDSetup", true);
-                }
-            }
             else
             {
-                //セットアップボタン
-                if (!Setting.Setup)
+                if (!EditorPrefs.GetBool("UPDSetup"))
                 {
-                    Setting.FolderName = EditorGUILayout.TextField("FolderName", Setting.FolderName);
-
-                    Setting.Author = EditorGUILayout.TextField("Author", Setting.Author);
-                    Setting.PackageName = EditorGUILayout.TextField("PackageName", Setting.PackageName);
-                    Setting.PackageDisplayName = EditorGUILayout.TextField("PackageDisplayName", Setting.PackageDisplayName);
-                    Setting.PackageDescription = EditorGUILayout.TextField("PackageDescription", Setting.PackageDescription);
-                    Setting.PackageRepository = EditorGUILayout.TextField("PackageRepositoryName", Setting.PackageRepository);
-
-                    if (GUILayout.Button("Setup"))
+                    EditorPrefs.SetString("UPDScope", EditorGUILayout.TextField("Scope", EditorPrefs.GetString("UPDScope")));
+                    EditorPrefs.SetString("UPDRepository", EditorGUILayout.TextField("GithubUserName", EditorPrefs.GetString("UPDRepository")));
+                    if (GUILayout.Button("UPDSetup"))
                     {
-                        Setting.Version = new Version()
-                        {
-                            a = 1,
-                            b = 0,
-                            c = 0,
-                        };
-                        //アセットかどうか
-                        Setting.Setup = true;
-                        FolderPath(Setting.FolderName);
-                        Setting.ProjectDirectory = Setting.FolderName + "/";
-                        SaveJson(Setting);
+                        EditorPrefs.SetBool("UPDSetup", true);
                     }
+                    return;
                 }
                 else
                 {
-                    if (GUILayout.Button("Publish"))
+                    //セットアップボタン
+                    if (!Setting.Setup)
                     {
-                        SaveJson(Setting);
-                        string command = $"/c cd Assets & cd {Setting.ProjectDirectory.Replace("/","\\")} & npm publish";
-                        Process.Start("cmd.exe", command);
-                        Setting.Version.c = Setting.Version.c + 1;
+                        Setting.FolderName = EditorGUILayout.TextField("FolderName", Setting.FolderName);
+
+                        Setting.Author = EditorGUILayout.TextField("Author", Setting.Author);
+                        Setting.PackageName = EditorGUILayout.TextField("PackageName", Setting.PackageName);
+                        Setting.PackageDisplayName = EditorGUILayout.TextField("PackageDisplayName", Setting.PackageDisplayName);
+                        Setting.PackageDescription = EditorGUILayout.TextField("PackageDescription", Setting.PackageDescription);
+                        Setting.PackageRepository = EditorGUILayout.TextField("PackageRepositoryName", Setting.PackageRepository);
+
+                        if (GUILayout.Button("Setup"))
+                        {
+                            Setting.Version = new Version()
+                            {
+                                a = 1,
+                                b = 0,
+                                c = 0,
+                            };
+                            Setting.Setup = true;
+                            FolderPath(Setting.FolderName);
+                            Setting.ProjectDirectory = Setting.FolderName + "/";
+                            SaveJson(Setting);
+
+                            EditorUtility.SetDirty(Setting);
+                            AssetDatabase.SaveAssets();
+                        }
+                    }
+                    else
+                    {
+                        if (GUILayout.Button("Publish"))
+                        {
+                            SaveJson(Setting);
+                            string command = $"/c cd Assets & cd {Setting.ProjectDirectory.Replace("/", "\\")} & npm publish";
+                            Process.Start("cmd.exe", command);
+                            Setting.Version.c = Setting.Version.c + 1;
+                        }
                     }
                 }
             }
