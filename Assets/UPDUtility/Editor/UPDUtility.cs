@@ -12,83 +12,72 @@ namespace KYapp.UPD
 {
     public class UPDUtility : EditorWindow
     {
-        public UPDSetting Setting;
 
         [MenuItem("KYapp/UPD")]
         private static void ShowWindow()
         {
+
             UPDUtility window = GetWindow<UPDUtility>();
             window.titleContent = new GUIContent("UPD");
         }
         private void OnGUI()
         {
-            if (Setting == null)
+            Debug.Log(UPDSetting.instance.PackageDescription);
+            if (GUILayout.Button("Reset"))
             {
-                var guids = AssetDatabase.FindAssets("UPDSetting");
-                if (guids.Length == 0)
-                {
-                    throw new FileNotFoundException("UPDSetting does not found");
-                }
+                UPDSetting.instance.Setup = false;
+            }
 
-                var path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                var obj = AssetDatabase.LoadAssetAtPath<UPDSetting>(path);
-                Setting = obj;
+            if (!EditorPrefs.GetBool("UPDSetup"))
+            {
+                EditorPrefs.SetString("UPDScope", EditorGUILayout.TextField("Scope", EditorPrefs.GetString("UPDScope")));
+                EditorPrefs.SetString("UPDRepository", EditorGUILayout.TextField("GithubUserName", EditorPrefs.GetString("UPDRepository")));
+                if (GUILayout.Button("UPDSetup"))
+                {
+                    EditorPrefs.SetBool("UPDSetup", true);
+                }
                 return;
             }
             else
             {
-                if (!EditorPrefs.GetBool("UPDSetup"))
+                //セットアップボタン
+                if (!UPDSetting.instance.Setup)
                 {
-                    EditorPrefs.SetString("UPDScope", EditorGUILayout.TextField("Scope", EditorPrefs.GetString("UPDScope")));
-                    EditorPrefs.SetString("UPDRepository", EditorGUILayout.TextField("GithubUserName", EditorPrefs.GetString("UPDRepository")));
-                    if (GUILayout.Button("UPDSetup"))
+                    UPDSetting.instance.FolderName = EditorGUILayout.TextField("FolderName", UPDSetting.instance.FolderName);
+
+                    UPDSetting.instance.Author = EditorGUILayout.TextField("Author", UPDSetting.instance.Author);
+                    UPDSetting.instance.PackageName = EditorGUILayout.TextField("PackageName", UPDSetting.instance.PackageName);
+                    UPDSetting.instance.PackageDisplayName = EditorGUILayout.TextField("PackageDisplayName", UPDSetting.instance.PackageDisplayName);
+                    UPDSetting.instance.PackageDescription = EditorGUILayout.TextField("PackageDescription", UPDSetting.instance.PackageDescription);
+                    UPDSetting.instance.PackageRepository = EditorGUILayout.TextField("PackageRepositoryName", UPDSetting.instance.PackageRepository);
+
+                    if (GUILayout.Button("Setup"))
                     {
-                        EditorPrefs.SetBool("UPDSetup", true);
+                        UPDSetting.instance.Version = new Version()
+                        {
+                            a = 1,
+                            b = 0,
+                            c = 0,
+                        };
+                        UPDSetting.instance.Setup = true;
+                        FolderPath(UPDSetting.instance.FolderName);
+                        UPDSetting.instance.ProjectDirectory = UPDSetting.instance.FolderName + "/";
+                        SaveJson(UPDSetting.instance);
+
+                        UPDSetting.instance.save();
                     }
-                    return;
                 }
                 else
                 {
-                    //セットアップボタン
-                    if (!Setting.Setup)
+                    if (GUILayout.Button("Publish"))
                     {
-                        Setting.FolderName = EditorGUILayout.TextField("FolderName", Setting.FolderName);
+                        SaveJson(UPDSetting.instance);
+                        string command = $"/c cd Assets & cd {UPDSetting.instance.ProjectDirectory.Replace("/", "\\")} & npm publish";
+                        Process.Start("cmd.exe", command);
+                        UPDSetting.instance.Version.c = UPDSetting.instance.Version.c + 1;
 
-                        Setting.Author = EditorGUILayout.TextField("Author", Setting.Author);
-                        Setting.PackageName = EditorGUILayout.TextField("PackageName", Setting.PackageName);
-                        Setting.PackageDisplayName = EditorGUILayout.TextField("PackageDisplayName", Setting.PackageDisplayName);
-                        Setting.PackageDescription = EditorGUILayout.TextField("PackageDescription", Setting.PackageDescription);
-                        Setting.PackageRepository = EditorGUILayout.TextField("PackageRepositoryName", Setting.PackageRepository);
-
-                        if (GUILayout.Button("Setup"))
-                        {
-                            Setting.Version = new Version()
-                            {
-                                a = 1,
-                                b = 0,
-                                c = 0,
-                            };
-                            Setting.Setup = true;
-                            FolderPath(Setting.FolderName);
-                            Setting.ProjectDirectory = Setting.FolderName + "/";
-                            SaveJson(Setting);
-
-                            EditorUtility.SetDirty(Setting);
-                            AssetDatabase.SaveAssets();
-                        }
-                    }
-                    else
-                    {
-                        if (GUILayout.Button("Publish"))
-                        {
-                            SaveJson(Setting);
-                            string command = $"/c cd Assets & cd {Setting.ProjectDirectory.Replace("/", "\\")} & npm publish";
-                            Process.Start("cmd.exe", command);
-                            Setting.Version.c = Setting.Version.c + 1;
-
-                            EditorUtility.SetDirty(Setting);
-                            AssetDatabase.SaveAssets();
-                        }
+                        EditorUtility.SetDirty(UPDSetting.instance);
+                        AssetDatabase.SaveAssets();
                     }
                 }
             }
@@ -119,19 +108,41 @@ namespace KYapp.UPD
         }
     }
 
-    [CreateAssetMenu()]
-    public class UPDSetting : ScriptableObject
+    [FilePath("UPDSetting/UPDSetting.data", FilePathAttribute.Location.ProjectFolder)]
+    public class UPDSetting : ScriptableSingleton<UPDSetting>
     {
+        [SerializeField]
         public bool Setup;
+
+        [SerializeField]
         public string FolderName;
+
+        [SerializeField]
         public string ProjectDirectory;
+
+        [SerializeField]
         public Version Version;
 
+
+        [SerializeField]
         public string Author;
+
+        [SerializeField]
         public string PackageName;
+
+        [SerializeField]
         public string PackageDisplayName;
+
+        [SerializeField]
         public string PackageDescription;
+
+        [SerializeField]
         public string PackageRepository;
+
+        public void save()
+        {
+            Save(true);
+        }
     }
 
     [Serializable]
